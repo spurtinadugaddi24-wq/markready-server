@@ -8,11 +8,12 @@ app.use(express.json({limit:'10kb'}));
 app.get('/', (req, res) => res.json({status:'MarkReady API running'}));
 
 app.post('/api/chat', async (req, res) => {
-  const {prompt} = req.body;
+  const {prompt, apiKey} = req.body;
   if(!prompt) return res.status(400).json({error:'No prompt provided'});
+  if(!apiKey) return res.status(400).json({error:'No API key provided'});
 
   try {
-    const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + process.env.GEMINI_API_KEY;
+    const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + apiKey;
 
     const response = await fetch(url, {
       method: 'POST',
