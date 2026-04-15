@@ -7,6 +7,15 @@ app.use(express.json({limit:'10kb'}));
 
 app.get('/', (req, res) => res.json({status:'MarkReady API running'}));
 
+function cleanJSON(text) {
+  let t = text.trim();
+  t = t.replace(/```json/gi, '').replace(/```/g, '').trim();
+  const start = t.indexOf('{');
+  const end = t.lastIndexOf('}');
+  if(start !== -1 && end !== -1) t = t.substring(start, end + 1);
+  return t;
+}
+
 app.post('/api/chat', async (req, res) => {
   const {prompt, apiKey} = req.body;
   if(!prompt) return res.status(400).json({error:'No prompt provided'});
@@ -22,8 +31,11 @@ app.post('/api/chat', async (req, res) => {
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         max_tokens: 800,
-        temperature: 0.7,
-        messages: [{role:'user', content: prompt}]
+        temperature: 0.3,
+        messages: [
+          {role:'system', content:'You are a JSON-only responder. Always respond with raw valid JSON only. No markdown, no code fences, no explanation. Just the JSON object.'},
+          {role:'user', content: prompt}
+        ]
       })
     });
 
@@ -33,7 +45,8 @@ app.post('/api/chat', async (req, res) => {
     }
 
     const data = await response.json();
-    const text = data.choices?.[0]?.message?.content || '';
+    const raw = data.choices?.[0]?.message?.content || '';
+    const text = cleanJSON(raw);
     res.json({text});
 
   } catch(e) {
