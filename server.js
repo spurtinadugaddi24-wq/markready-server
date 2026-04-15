@@ -13,17 +13,17 @@ app.post('/api/chat', async (req, res) => {
   if(!apiKey) return res.status(400).json({error:'No API key provided'});
 
   try {
-    const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + apiKey;
-
-    const response = await fetch(url, {
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + apiKey
+      },
       body: JSON.stringify({
-        contents: [{parts: [{text: prompt}]}],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 800
-        }
+        model: 'llama-3.3-70b-versatile',
+        max_tokens: 800,
+        temperature: 0.7,
+        messages: [{role:'user', content: prompt}]
       })
     });
 
@@ -33,7 +33,7 @@ app.post('/api/chat', async (req, res) => {
     }
 
     const data = await response.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const text = data.choices?.[0]?.message?.content || '';
     res.json({text});
 
   } catch(e) {
