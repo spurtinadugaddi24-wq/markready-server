@@ -30,7 +30,7 @@ app.post('/api/chat', async (req, res) => {
       },
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
-        max_tokens: 800,
+        max_tokens: 1200,
         temperature: 0.3,
         messages: [
           {role:'system', content:'You are a JSON-only responder. Always respond with raw valid JSON only. No markdown, no code fences, no explanation. Just the JSON object.'},
